@@ -23,15 +23,15 @@ public final class UiUtil {
      * chỉ đẩy các lớp phủ (chữ, nút) ra khỏi vùng đó.
      */
     public static void applyOverlayInsets(View root, View topOverlay, View bottomOverlay) {
-        final int top0 = topOverlay.getPaddingTop();
-        final int bottom0 = bottomOverlay.getPaddingBottom();
+        final int tl = topOverlay.getPaddingLeft(), tt = topOverlay.getPaddingTop();
+        final int tr = topOverlay.getPaddingRight(), tb = topOverlay.getPaddingBottom();
+        final int bl = bottomOverlay.getPaddingLeft(), bt = bottomOverlay.getPaddingTop();
+        final int br = bottomOverlay.getPaddingRight(), bb = bottomOverlay.getPaddingBottom();
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, windowInsets) -> {
             Insets bars = windowInsets.getInsets(
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            topOverlay.setPadding(topOverlay.getPaddingLeft(), top0 + bars.top,
-                    topOverlay.getPaddingRight(), topOverlay.getPaddingBottom());
-            bottomOverlay.setPadding(bottomOverlay.getPaddingLeft(), bottomOverlay.getPaddingTop(),
-                    bottomOverlay.getPaddingRight(), bottom0 + bars.bottom);
+            topOverlay.setPadding(tl + bars.left, tt + bars.top, tr + bars.right, tb);
+            bottomOverlay.setPadding(bl + bars.left, bt, br + bars.right, bb + bars.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
         // Icon trạng thái màu sáng cho dễ nhìn trên nền camera tối

@@ -2,7 +2,9 @@ package com.example.pugcore;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.hardware.display.DisplayManager;
 import android.graphics.Matrix;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -11,7 +13,6 @@ import android.util.Size;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
@@ -39,10 +40,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Đóng gói camera + MediaPipe + thuật toán đếm push-up.
- * Chỉ phân tích khung hình khi setCounting(true).
- */
+
 public class PoseTracker {
 
     public interface RepListener {
@@ -54,13 +52,17 @@ public class PoseTracker {
     }
 
     private static final String TAG = "PoseTracker";
-    private static final double DOWN_ANGLE = 90;   // góc khuỷu < 90 => đã hạ người
-    private static final double UP_ANGLE = 160;    // góc khuỷu > 160 => đã đẩy lên
+    private static final double DOWN_ANGLE = 110;
+    private static final double UP_ANGLE = 140;
     private static final float MIN_VISIBILITY = 0.5f;
-   
+
     private static final long MIN_FRAME_INTERVAL_MS = 100;
 
     private static final boolean FLIP_PREVIEW = true;
+
+    private static final boolean NATIVE_4_3 = true;
+
+    private static final boolean PREFER_BACK_ON_EMULATOR = true;
 
     private final Context context;
     private final RepListener listener;
@@ -73,6 +75,11 @@ public class PoseTracker {
     private volatile boolean released = false;
     private volatile boolean previewMirrored = false;
     private volatile FrameListener frameListener;
+
+    private Preview previewUseCase;
+    private ImageAnalysis analysisUseCase;
+    private DisplayManager displayManager;
+    private DisplayManager.DisplayListener displayListener;
 
     private boolean isDown = false;
     private double smoothedAngle = -1;
@@ -120,10 +127,51 @@ public class PoseTracker {
         return poseLandmarker != null;
     }
 
-    /** Bật/tắt đếm rep. Mỗi lần bật sẽ reset trạng thái lên/xuống. */
+
     public void setCounting(boolean on) {
         if (on) resetPending = true;
         counting = on;
+    }
+
+    private static boolean isEmulator() {
+        return Build.FINGERPRINT.startsWith("generic")
+                || Build.FINGERPRINT.contains("emulator")
+                || Build.HARDWARE.contains("ranchu")
+                || Build.HARDWARE.contains("goldfish")
+                || Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("Android SDK built for")
+                || Build.PRODUCT.contains("sdk");
+    }
+
+    private static ResolutionSelector buildSelector() {
+        AspectRatioStrategy ratio = NATIVE_4_3
+                ? AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY
+                : AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY;
+        Size bound = NATIVE_4_3 ? new Size(640, 480) : new Size(640, 360);
+        return new ResolutionSelector.Builder()
+                .setAspectRatioStrategy(ratio)
+                .setResolutionStrategy(new ResolutionStrategy(bound,
+                        ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER))
+                .build();
+    }
+
+
+    private void registerRotationListener() {
+        if (displayListener != null) return;
+        displayManager = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+        if (displayManager == null) return;
+        displayListener = new DisplayManager.DisplayListener() {
+            @Override public void onDisplayAdded(int displayId) { }
+            @Override public void onDisplayRemoved(int displayId) { }
+            @Override public void onDisplayChanged(int displayId) { applyDisplayRotation(); }
+        };
+        displayManager.registerDisplayListener(displayListener, mainHandler);
+    }
+
+    private void applyDisplayRotation() {
+        int rotation = ContextCompat.getDisplayOrDefault(context).getRotation();
+        if (previewUseCase != null) previewUseCase.setTargetRotation(rotation);
+        if (analysisUseCase != null) analysisUseCase.setTargetRotation(rotation);
     }
 
     public void startCamera(LifecycleOwner owner, PreviewView viewFinder) {
@@ -140,35 +188,40 @@ public class PoseTracker {
                 Log.i(TAG, "Số camera khả dụng: " + cameraCount);
 
                 Preview preview = new Preview.Builder()
-                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                        .setResolutionSelector(buildSelector())
                         .build();
                 preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
 
-
+                // Chỉ phân tích khung hình khi MediaPipe nạp được
                 ImageAnalysis analysis = null;
                 if (poseLandmarker != null) {
-                    ResolutionSelector analysisRes = new ResolutionSelector.Builder()
-                            .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
-                            .setResolutionStrategy(new ResolutionStrategy(new Size(640, 360),
-                                    ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER))
-                            .build();
                     analysis = new ImageAnalysis.Builder()
-                            .setResolutionSelector(analysisRes)
+                            .setResolutionSelector(buildSelector())
                             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                             .build();
                     analysis.setAnalyzer(executor, this::analyze);
                 }
 
+                previewUseCase = preview;
+                analysisUseCase = analysis;
+                registerRotationListener();
 
-                if (bind(provider, owner, CameraSelector.DEFAULT_FRONT_CAMERA, preview, analysis)) {
-                    // camera trước: CameraX tự lật gương, FLIP_PREVIEW lật thêm 1 lần nữa
-                    previewMirrored = !FLIP_PREVIEW;
-                } else if (bind(provider, owner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)) {
-                    previewMirrored = FLIP_PREVIEW;
+                // Thử camera trước, không có thì thử camera sau (emulator hay gán webcam vào camera sau)
+                boolean backFirst = PREFER_BACK_ON_EMULATOR && isEmulator();
+                CameraSelector first = backFirst
+                        ? CameraSelector.DEFAULT_BACK_CAMERA : CameraSelector.DEFAULT_FRONT_CAMERA;
+                CameraSelector second = backFirst
+                        ? CameraSelector.DEFAULT_FRONT_CAMERA : CameraSelector.DEFAULT_BACK_CAMERA;
+                // Camera trước: CameraX tự lật gương, FLIP_PREVIEW lật thêm 1 lần nữa.
+                // Camera sau: không tự lật, chỉ có FLIP_PREVIEW.
+                if (bind(provider, owner, first, preview, analysis)) {
+                    previewMirrored = backFirst ? FLIP_PREVIEW : !FLIP_PREVIEW;
+                } else if (bind(provider, owner, second, preview, analysis)) {
+                    previewMirrored = backFirst ? !FLIP_PREVIEW : FLIP_PREVIEW;
                 } else {
-                    Toast.makeText(context, "Không mở được camera (máy chỉ thấy " + cameraCount
-                            + " camera). Xem Logcat tag PoseTracker", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Không tìm thấy camera (máy chỉ thấy " + cameraCount
+                            + " camera). Kiểm tra webcam hoặc cài đặt camera của emulator.", Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Lỗi khởi chạy Camera: " + e.getMessage(), e);
@@ -205,10 +258,9 @@ public class PoseTracker {
             matrix.postRotate(imageProxy.getImageInfo().getRotationDegrees());
             Bitmap rotated = Bitmap.createBitmap(
                     bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            if (rotated != bitmap) bitmap.recycle(); // giải phóng bitmap trung gian ngay, đỡ rác bộ nhớ
 
-            long ts = SystemClock.uptimeMillis();
-            if (ts <= lastTimestamp) ts = lastTimestamp + 1; // timestamp phải tăng dần
-            lastTimestamp = ts;
+            long ts = nextTimestamp();
 
             poseLandmarker.detectAsync(new BitmapImageBuilder(rotated).build(), ts);
         } catch (Exception e) {
@@ -235,7 +287,7 @@ public class PoseTracker {
 
         List<NormalizedLandmark> lm = result.landmarks().get(0);
 
-        // Chọn tay nào đang hiện rõ hơn: trái (11,13,15) hoặc phải (12,14,16)
+
         float left = armVisibility(lm, 11, 13, 15);
         float right = armVisibility(lm, 12, 14, 16);
         boolean useLeft = left >= right;
@@ -268,7 +320,7 @@ public class PoseTracker {
         return l.visibility().orElse(0f);
     }
 
-    /** Góc tại p2, đã nhân theo kích thước ảnh để không bị méo khi ảnh không vuông. */
+
     private static double calculateAngle(NormalizedLandmark p1, NormalizedLandmark p2,
                                          NormalizedLandmark p3, int width, int height) {
         double ax = (p1.x() - p2.x()) * width, ay = (p1.y() - p2.y()) * height;
@@ -278,9 +330,19 @@ public class PoseTracker {
         return angle;
     }
 
+    private synchronized long nextTimestamp() {
+        long ts = SystemClock.uptimeMillis();
+        if (ts <= lastTimestamp) ts = lastTimestamp + 1; // timestamp phải tăng dần
+        lastTimestamp = ts;
+        return ts;
+    }
+
     public void release() {
         released = true;
         counting = false;
+        if (displayManager != null && displayListener != null) {
+            displayManager.unregisterDisplayListener(displayListener);
+        }
         // đóng trên executor để không đụng lúc đang phân tích dở
         executor.execute(() -> {
             if (poseLandmarker != null) poseLandmarker.close();

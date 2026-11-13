@@ -14,27 +14,33 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PUGcore">
 
+        <!-- Menu và Cửa hàng: khóa dọc -->
         <activity
             android:name=".MenuActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Khóa dọc để xoay màn hình không làm mất trạng thái trận đấu / camera -->
-        <activity
-            android:name=".TrainingActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".BattleActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
         <activity
             android:name=".ShopActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- Tập luyện và Chiến đấu: luôn ngang (xoay được 2 chiều ngang, bất kể cài đặt tự xoay).
+             configChanges để Activity không bị tạo lại khi lật giữa 2 chiều ngang. -->
+        <activity
+            android:name=".TrainingActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".BattleActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape" />
     </application>
 
 </manifest>

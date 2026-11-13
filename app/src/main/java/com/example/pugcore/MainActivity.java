@@ -109,11 +109,22 @@ public class MainActivity extends AppCompatActivity {
                 imageAnalysis.setAnalyzer(backgroundExecutor, this::analyzeImage);
 
                 CameraSelector cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
+                try {
+                    if (!cameraProvider.hasCamera(cameraSelector)) {
+                        if (cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) {
+                            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+                        } else if (!cameraProvider.getAvailableCameraInfos().isEmpty()) {
+                            cameraSelector = cameraProvider.getAvailableCameraInfos().get(0).getCameraSelector();
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Lỗi kiểm tra camera: " + e.getMessage());
+                }
 
                 cameraProvider.unbindAll();
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis);
 
-            } catch (ExecutionException | InterruptedException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "Lỗi khởi chạy Camera: " + e.getMessage());
             }
         }, ContextCompat.getMainExecutor(this));

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,11 +61,8 @@ public class TrainingActivity extends AppCompatActivity {
         tracker.setCounting(true);
         updateUi();
 
-        setupDebugButton();
-
         if (!tracker.isReady()) {
-            Toast.makeText(this, "MediaPipe không chạy được trên thiết bị này. "
-                    + "Dùng nút [DEBUG] +1 rep để thử.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "MediaPipe không chạy được trên thiết bị này.", Toast.LENGTH_LONG).show();
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -100,22 +96,15 @@ public class TrainingActivity extends AppCompatActivity {
     private void showPose(PoseFrame f) {
         poseOverlay.setFrame(f);
         if (tvDebug.getVisibility() != View.VISIBLE) return;
+        String size = "\nẢnh MediaPipe nhận: " + f.width + "x" + f.height;
         if (!f.hasPerson()) {
-            tvDebug.setText("Không thấy người trong khung hình");
+            tvDebug.setText("Không thấy người trong khung hình" + size);
         } else if (Double.isNaN(f.angle)) {
-            tvDebug.setText("Thấy người nhưng tay " + f.arm + " chưa rõ (độ tin cậy thấp)");
+            tvDebug.setText("Thấy người nhưng tay " + f.arm + " chưa rõ (độ tin cậy thấp)" + size);
         } else {
             tvDebug.setText(String.format(Locale.getDefault(), "Tay %s  |  góc %.0f°  |  %s",
-                    f.arm, f.angle, f.down ? "ĐÃ HẠ, duỗi >160° để tính rep" : "co <90° để hạ"));
+                    f.arm, f.angle, f.down ? "ĐÃ HẠ, duỗi >160° để tính rep" : "co <90° để hạ") + size);
         }
-    }
-
-    /** Nút giả lập 1 rep, chỉ hiện ở bản debug (để test trên emulator không có MediaPipe). */
-    private void setupDebugButton() {
-        if (!UiUtil.isDebuggable(this)) return;
-        Button btn = findViewById(R.id.btnDebugRep);
-        btn.setVisibility(View.VISIBLE);
-        btn.setOnClickListener(v -> onRep());
     }
 
     @Override

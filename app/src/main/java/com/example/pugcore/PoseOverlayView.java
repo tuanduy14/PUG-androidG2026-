@@ -13,13 +13,12 @@ public class PoseOverlayView extends View {
     private static final boolean INVERT_MIRROR = false;
     private static final float MIN_DRAW_VISIBILITY = 0.3f;
 
+    // Chỉ vẽ tay và thân (không vẽ ngón tay, chân) cho gọn
     private static final int[][] CONNECTIONS = {
             {11, 12}, {11, 13}, {13, 15}, {12, 14}, {14, 16},
-            {11, 23}, {12, 24}, {23, 24},
-            {23, 25}, {25, 27}, {24, 26}, {26, 28},
-            {15, 17}, {15, 19}, {15, 21}, {16, 18}, {16, 20}, {16, 22},
-            {27, 29}, {27, 31}, {28, 30}, {28, 32}
+            {11, 23}, {12, 24}, {23, 24}
     };
+    private static final int[] POINTS = {11, 12, 13, 14, 15, 16, 23, 24};
 
     private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint armPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -62,8 +61,8 @@ public class PoseOverlayView extends View {
         draw(canvas, f, left ? 11 : 12, left ? 13 : 14, armPaint, scale, dx, dy, mirror);
         draw(canvas, f, left ? 13 : 14, left ? 15 : 16, armPaint, scale, dx, dy, mirror);
 
-        for (int i = 11; i < f.x.length && i <= 32; i++) {
-            if (f.visibility[i] < MIN_DRAW_VISIBILITY) continue;
+        for (int i : POINTS) {
+            if (i >= f.x.length || f.visibility[i] < MIN_DRAW_VISIBILITY) continue;
             canvas.drawCircle(px(f, i, scale, dx, mirror, vw), py(f, i, scale, dy), 8f, pointPaint);
         }
     }
