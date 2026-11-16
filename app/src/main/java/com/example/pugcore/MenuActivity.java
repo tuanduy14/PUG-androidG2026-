@@ -2,102 +2,136 @@ package com.example.pugcore;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.OrientationEventListener;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Locale;
 
+/** Menu chính (dọc): Tập luyện (Hít đất / Plank), Chiến đấu, Cửa hàng, Gacha, Kho đồ. */
 public class MenuActivity extends AppCompatActivity {
 
-    private TextView tvStats;
+    private PixelSpriteView hero;
+    private TextView tvGold, tvLevel, tvExp, tvHp, tvDamage, tvPushups, tvPlankTime;
+    private PixelBarView barExp, barHp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PixelUi.init(this);
+        SoundFx.init(this);
         setContentView(R.layout.activity_menu);
         UiUtil.applySystemBarPadding(findViewById(R.id.root));
+        SettingsDialog.attach(this);
 
-        tvStats = findViewById(R.id.tvStats);
-        findViewById(R.id.btnTrain).setOnClickListener(v ->
-                askRotateThen(() -> startActivity(new Intent(this, TrainingActivity.class))));
-        findViewById(R.id.btnBattle).setOnClickListener(v -> showMonsterPicker());
-        findViewById(R.id.btnShop).setOnClickListener(v ->
-                startActivity(new Intent(this, ShopActivity.class)));
+        ((SceneBackgroundView) findViewById(R.id.menuBg)).setScene(SceneBackgroundView.TITLE, false);
+        findViewById(R.id.goldBox).setBackground(PixelUi.box(this, 0xE60F1320, PixelUi.OUTLINE, 2));
+        findViewById(R.id.levelBox).setBackground(PixelUi.box(this, 0xE61C2233, PixelUi.OUTLINE, 3));
+        findViewById(R.id.heroInfo).setBackground(PixelUi.box(this, 0xCC161C2C, PixelUi.OUTLINE, 3));
+        findViewById(R.id.statsPanel).setBackground(PixelUi.box(this, 0xE61C2233, PixelUi.OUTLINE, 3));
+
+        hero = findViewById(R.id.menuHero);
+        Fx.bob(hero);
+
+        tvGold = findViewById(R.id.tvGold);
+        tvLevel = findViewById(R.id.tvLevel);
+        tvExp = findViewById(R.id.tvExp);
+        tvHp = findViewById(R.id.tvHp);
+        tvDamage = findViewById(R.id.tvDamage);
+        tvPushups = findViewById(R.id.tvPushups);
+        tvPlankTime = findViewById(R.id.tvPlankTime);
+        barExp = findViewById(R.id.barExp);
+        barHp = findViewById(R.id.barHp);
+        barExp.setFillColor(0xFF38BDF8);
+        barHp.setFillColor(0xFFF43F5E);
+        TextView btnTrain = findViewById(R.id.btnTrain);
+        TextView btnBattle = findViewById(R.id.btnBattle);
+        TextView btnShop = findViewById(R.id.btnShop);
+        TextView btnGacha = findViewById(R.id.btnGacha);
+        TextView btnInv = findViewById(R.id.btnInventory);
+        btnTrain.setBackground(PixelUi.button(this, 0xFF10B981));
+        btnBattle.setBackground(PixelUi.button(this, PixelUi.AMBER));
+        btnShop.setBackground(PixelUi.button(this, 0xFF0EA5E9));
+        btnGacha.setBackground(PixelUi.button(this, 0xFF9333EA));
+        btnInv.setBackground(PixelUi.button(this, 0xFF28314B));
+
+        btnTrain.setOnClickListener(v -> {
+            SoundFx.play(SoundFx.TAB);
+            showTrainingPicker();
+        });
+        btnBattle.setOnClickListener(v -> {
+            SoundFx.play(SoundFx.TAB);
+            startActivity(new Intent(this, MapActivity.class));
+        });
+        btnShop.setOnClickListener(v -> {
+            SoundFx.play(SoundFx.TAB);
+            startActivity(new Intent(this, ShopActivity.class));
+        });
+        btnGacha.setOnClickListener(v -> {
+            SoundFx.play(SoundFx.TAB);
+            startActivity(new Intent(this, GachaActivity.class));
+        });
+        btnInv.setOnClickListener(v -> {
+            SoundFx.play(SoundFx.TAB);
+            startActivity(new Intent(this, InventoryActivity.class));
+        });
+
+        PixelUi.applyFont(findViewById(android.R.id.content));
+    }
+
+    /** Chọn bài tập: Hít đất (mỗi rep = EXP) hoặc Plank (giữ chuẩn 3 giây = 1 EXP + vé Gacha hằng ngày). */
+    private void showTrainingPicker() {
+        final PixelDialog[] dlg = new PixelDialog[1];
+        PixelDialog d = new PixelDialog(this).title("CHỌN BÀI TẬP", PixelUi.AMBER_LIGHT);
+        PixelDialog.Option push = d.option("HÍT ĐẤT",
+                "Mỗi rep hoàn chỉnh = 1 EXP", false, () -> {
+                    dlg[0].dismiss();
+                    UiUtil.askRotateThen(this, () -> startActivity(new Intent(this, TrainingActivity.class)));
+                });
+        PixelDialog.Option plank = d.option("PLANK",
+                "Giữ lưng thẳng 165°–180°: 3 giây = 1 EXP. Cộng dồn trong ngày để nhận Vé Gacha (tối đa 10 vé/ngày)",
+                false, () -> {
+                    dlg[0].dismiss();
+                    UiUtil.askRotateThen(this, "thấy rõ vai, hông và cổ chân của bạn",
+                            () -> startActivity(new Intent(this, PlankActivity.class)));
+                });
+        d.add(push.row).add(plank.row).button("HỦY", 0xFF2A334D, PixelUi.TEXT, null);
+        dlg[0] = d;
+        d.show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        MusicPlayer.play(this, MusicPlayer.MENU);
         refreshStats();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MusicPlayer.pause();
+    }
+
+    private static String mmss(long ms) {
+        long s = ms / 1000;
+        return (s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60);
+    }
+
     private void refreshStats() {
-        PlayerData p = PlayerData.load(this);
-        GameData.Weapon w = GameData.WEAPONS[p.weaponId];
-        GameData.Armor a = GameData.ARMORS[p.armorId];
-        tvStats.setText(String.format(Locale.getDefault(),
-                "Cấp %d  (1 rep = %.1f rep ở cấp 1)\nEXP: %d/%d\nVàng: %d\n"
-                        + "Vũ khí: %s (+%d sát thương/rep)\nGiáp: %s (máu tối đa %d)\nBình máu: %d",
-                p.level, p.repScale(), p.exp, p.expToNext(), p.gold,
-                w.name, w.bonusDmg, a.name, p.maxHp(), p.potions));
-    }
+        PlayerData p = PlayerData.load(this); // load đã tự reset số liệu hôm nay nếu sang ngày mới
+        hero.setHero(PixelArt.POSE_ATTACK, GameData.ARMORS[p.armorId], GameData.WEAPONS[p.weaponId]);
 
-    /**
-     * Tập luyện và Chiến đấu chạy ở chế độ ngang. Hiện thông báo yêu cầu xoay điện thoại;
-     * khi cảm biến thấy máy đã nằm ngang thì tự vào luôn, hoặc bấm "Tiếp tục" để vào ngay.
-     */
-    private void askRotateThen(Runnable start) {
-        final boolean[] started = {false};
-        final OrientationEventListener[] listener = new OrientationEventListener[1];
+        tvGold.setText(String.valueOf(p.gold));
+        tvLevel.setText("LV." + p.level);
+        tvExp.setText(p.exp + "/" + p.expToNext());
+        barExp.setFraction(p.exp / (float) p.expToNext(), false);
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Xoay ngang điện thoại")
-                .setMessage("Hãy xoay điện thoại sang chiều ngang rồi đặt máy sao cho camera "
-                        + "thấy rõ vai và cánh tay của bạn.\n\nApp sẽ tự vào khi máy nằm ngang, "
-                        + "hoặc bấm Tiếp tục.")
-                .create();
+        tvHp.setText(p.maxHp() + "/" + p.maxHp());
+        barHp.setFraction(1f, false);
+        tvDamage.setText("SÁT THƯƠNG: " + p.calcDamage(1) + " / rep");
 
-        Runnable go = () -> {
-            if (started[0]) return;
-            started[0] = true;
-            if (listener[0] != null) listener[0].disable();
-            dialog.dismiss();
-            start.run();
-        };
-        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Tiếp tục", (d, w) -> go.run());
-        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Hủy", (d, w) -> { });
-        dialog.setOnDismissListener(d -> {
-            if (listener[0] != null) listener[0].disable();
-        });
-
-        listener[0] = new OrientationEventListener(this) {
-            @Override
-            public void onOrientationChanged(int o) {
-                if (o == ORIENTATION_UNKNOWN) return;
-                if ((o >= 60 && o <= 120) || (o >= 240 && o <= 300)) go.run();
-            }
-        };
-        dialog.show();
-        if (listener[0].canDetectOrientation()) listener[0].enable();
-    }
-
-    private void showMonsterPicker() {
-        String[] items = new String[GameData.MONSTERS.length];
-        for (int i = 0; i < items.length; i++) {
-            GameData.Monster m = GameData.MONSTERS[i];
-            items[i] = m.name + " — HP " + m.maxHp + ", ATK " + m.attack
-                    + ", thưởng " + m.rewardGold + " vàng";
-        }
-        new AlertDialog.Builder(this)
-                .setTitle("Chọn quái")
-                .setItems(items, (dialog, which) -> askRotateThen(() -> {
-                    Intent i = new Intent(this, BattleActivity.class);
-                    i.putExtra(BattleActivity.EXTRA_MONSTER, which);
-                    startActivity(i);
-                }))
-                .show();
+        tvPushups.setText(p.pushupToday + " rep");
+        tvPlankTime.setText(mmss(p.plankDailyMs));
     }
 }

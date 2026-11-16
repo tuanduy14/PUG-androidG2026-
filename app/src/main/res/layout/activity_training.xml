@@ -2,7 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#000000">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
@@ -14,12 +15,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Lớp chữ bay +1 EXP -->
+    <FrameLayout
+        android:id="@+id/popupLayer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <LinearLayout
         android:id="@+id/topOverlay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:background="#99000000"
         android:orientation="vertical"
         android:padding="8dp">
 
@@ -39,14 +45,15 @@
                     android:id="@+id/tvLevel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp" />
+                    android:textColor="#FCD34D"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
-                <ProgressBar
+                <com.example.pugcore.PixelBarView
                     android:id="@+id/pbExp"
-                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="12dp"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
 
             <TextView
@@ -55,9 +62,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:text="Push-up: 0"
-                android:textColor="@android:color/holo_green_light"
-                android:textSize="28sp"
+                android:textColor="#6EE7B7"
+                android:textSize="26sp"
                 android:textStyle="bold" />
+        <include
+            layout="@layout/view_settings_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="12dp" />
         </LinearLayout>
 
         <TextView
@@ -69,19 +81,54 @@
             android:visibility="gone" />
     </LinearLayout>
 
+    <!-- Hiệp sĩ nâng tạ theo từng rep -->
+    <com.example.pugcore.PixelSpriteView
+        android:id="@+id/trainHero"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="28dp" />
+
+    <TextView
+        android:id="@+id/tvLevelBanner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="90dp"
+        android:background="#FBBF24"
+        android:gravity="center"
+        android:paddingStart="18dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="8dp"
+        android:textColor="#020617"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:background="#99000000"
         android:orientation="vertical"
         android:padding="8dp">
 
-        <Button
+        <TextView
             android:id="@+id/btnFinish"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Kết thúc tập" />
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="18dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="12dp"
+            android:text="KẾT THÚC TẬP"
+            android:textColor="#020617"
+            android:textSize="14sp"
+            android:textStyle="bold" />
     </LinearLayout>
 </FrameLayout>

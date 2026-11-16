@@ -44,11 +44,11 @@ import java.util.concurrent.Executors;
 public class PoseTracker {
 
     public interface RepListener {
-        void onRep(); // luôn được gọi trên main thread
+        void onRep();
     }
 
     public interface FrameListener {
-        void onFrame(PoseFrame frame); // gọi trên main thread, mỗi khung hình được phân tích
+        void onFrame(PoseFrame frame);
     }
 
     private static final String TAG = "PoseTracker";

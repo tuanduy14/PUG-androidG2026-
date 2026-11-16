@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_weight="1"
-            android:text="BẢN ĐỒ 10 VÁN (VUỐT XEM)"
+            android:text="BẢN ĐỒ"
             android:textColor="#FCD34D"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -62,6 +62,11 @@
             android:textColor="#6EE7B7"
             android:textSize="12sp"
             android:textStyle="bold" />
+        <include
+            layout="@layout/view_settings_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp" />
     </LinearLayout>
 
     <ScrollView

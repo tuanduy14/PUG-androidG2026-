@@ -29,8 +29,27 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- Tập luyện và Chiến đấu: luôn ngang (xoay được 2 chiều ngang, bất kể cài đặt tự xoay).
-             configChanges để Activity không bị tạo lại khi lật giữa 2 chiều ngang. -->
+        <activity
+            android:name=".PlankActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape" />
+
+        <activity
+            android:name=".GachaActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".InventoryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".MapActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        
         <activity
             android:name=".TrainingActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"

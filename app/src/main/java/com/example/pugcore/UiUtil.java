@@ -3,7 +3,10 @@ package com.example.pugcore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.view.OrientationEventListener;
 import android.view.View;
+
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -50,5 +53,48 @@ public final class UiUtil {
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
+    }
+
+    /** Xoay ngang rồi vào bài tập dùng cánh tay (hít đất, chiến đấu). */
+    public static void askRotateThen(Activity activity, Runnable start) {
+        askRotateThen(activity, "thấy rõ vai và cánh tay của bạn", start);
+    }
+
+    /**
+     * Tập luyện và Chiến đấu chạy ở chế độ ngang. Hiện thông báo yêu cầu xoay điện thoại;
+     * khi cảm biến thấy máy đã nằm ngang thì tự vào luôn, hoặc bấm "Tiếp tục" để vào ngay.
+     * `hint` mô tả vị trí đặt máy (vd. "thấy rõ vai, hông và cổ chân của bạn" cho Plank).
+     */
+    public static void askRotateThen(Activity activity, String hint, Runnable start) {
+        final boolean[] started = {false};
+        final OrientationEventListener[] listener = new OrientationEventListener[1];
+
+        final PixelDialog dialog = new PixelDialog(activity)
+                .title("XOAY NGANG ĐIỆN THOẠI", PixelUi.AMBER_LIGHT)
+                .message("Hãy xoay điện thoại sang chiều ngang rồi đặt máy sao cho camera "
+                        + hint + ".\n\nApp sẽ tự vào khi máy nằm ngang, hoặc bấm TIẾP TỤC.");
+
+        Runnable go = () -> {
+            if (started[0]) return;
+            started[0] = true;
+            if (listener[0] != null) listener[0].disable();
+            dialog.dismiss();
+            start.run();
+        };
+        dialog.button("TIẾP TỤC", PixelUi.AMBER, PixelUi.DARK_TEXT, go)
+                .button("HỦY", 0xFF2A334D, PixelUi.TEXT, null);
+        dialog.setOnDismissListener(d -> {
+            if (listener[0] != null) listener[0].disable();
+        });
+
+        listener[0] = new OrientationEventListener(activity) {
+            @Override
+            public void onOrientationChanged(int o) {
+                if (o == ORIENTATION_UNKNOWN) return;
+                if ((o >= 60 && o <= 120) || (o >= 240 && o <= 300)) go.run();
+            }
+        };
+        dialog.show();
+        if (listener[0].canDetectOrientation()) listener[0].enable();
     }
 }
