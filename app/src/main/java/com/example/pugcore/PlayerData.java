@@ -34,19 +34,19 @@ public class PlayerData {
 
     // ---- Gacha
     public int gachaTickets = 0;
-    public int gachaPity = 0; // số lượt quay liên tiếp chưa ra Huyền thoại (đủ 70 thì lượt kế tiếp chắc chắn ra)
+    public int gachaPity = 0;
 
-    // ---- Plank: 3 giây giữ chuẩn = 1 EXP, thời gian cộng dồn trong ngày để nhận vé Gacha
+
     public static final long PLANK_MS_PER_EXP = 3000;
     public static final long[] PLANK_MILESTONE_S = {60, 150, 240, 300};
-    public static final int[] PLANK_MILESTONE_TICKETS = {1, 2, 2, 5}; // tổng 10 vé/ngày
+    public static final int[] PLANK_MILESTONE_TICKETS = {1, 2, 2, 5};
     public static final long PLANK_GOAL_S = 300;
-    public String plankDay = "";      // ngày của bộ đếm bên dưới (yyyy-MM-dd, giờ máy)
-    public long plankDailyMs = 0;     // tổng thời gian Plank chuẩn hôm nay
-    public int plankClaimedMask = 0;  // bit i = đã nhận vé ở mốc i hôm nay
-    public long plankRemainderMs = 0; // phần lẻ chưa đủ 3 giây, giữ qua các hiệp để không mất EXP
+    public String plankDay = "";
+    public long plankDailyMs = 0;
+    public int plankClaimedMask = 0;
+    public long plankRemainderMs = 0;
 
-    // ---- Số rep hít đất đã làm trong ngày (Tập luyện + Chiến đấu), về 0 lúc 00:00
+
     public int pushupToday = 0;
 
     public static PlayerData load(Context context) {
@@ -67,7 +67,7 @@ public class PlayerData {
         p.gachaTickets = sp.getInt("gachaTickets", 0);
         p.gachaPity = sp.getInt("gachaPity", 0);
 
-        // Dữ liệu cũ chưa có kho đồ: coi như đã sở hữu mọi món từ đầu bậc thang tới món đang dùng
+
         String ow = sp.getString("ownedWeapons", null);
         String oa = sp.getString("ownedArmors", null);
         if (ow == null) for (int i = 0; i <= p.weaponId; i++) p.ownedWeapons.add(i); else parse(ow, p.ownedWeapons);
@@ -189,7 +189,6 @@ public class PlayerData {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
     }
 
-    /** Sang ngày mới (00:00 giờ máy) thì đưa tiến độ Plank trong ngày và các mốc đã nhận về 0. */
     public void rollDaily() {
         String t = today();
         if (!t.equals(plankDay)) {

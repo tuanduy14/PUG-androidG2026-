@@ -142,7 +142,7 @@ public class TrainingActivity extends AppCompatActivity {
         if (!f.hasPerson()) {
             tvDebug.setText("Không thấy người trong khung hình" + size);
         } else if (Double.isNaN(f.angle)) {
-            tvDebug.setText("Thấy người nhưng tay " + f.arm + " chưa rõ (độ tin cậy thấp)" + size);
+            tvDebug.setText("Thấy người nhưng tay " + f.arm + " chưa rõ " + size);
         } else {
             tvDebug.setText(String.format(Locale.getDefault(), "Tay %s  |  góc %.0f°  |  %s",
                     f.arm, f.angle, f.down ? "ĐÃ HẠ, duỗi >160° để tính rep" : "co <90° để hạ") + size);

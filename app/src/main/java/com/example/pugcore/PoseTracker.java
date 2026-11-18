@@ -52,8 +52,8 @@ public class PoseTracker {
     }
 
     private static final String TAG = "PoseTracker";
-    private static final double DOWN_ANGLE = 110;
-    private static final double UP_ANGLE = 140;
+    private static final double DOWN_ANGLE = 90;
+    private static final double UP_ANGLE = 160;
     private static final float MIN_VISIBILITY = 0.5f;
 
     private static final long MIN_FRAME_INTERVAL_MS = 100;

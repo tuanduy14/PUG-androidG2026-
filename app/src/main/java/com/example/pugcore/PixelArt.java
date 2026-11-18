@@ -9,11 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Pixel art vẽ bằng các hình chữ nhật, port từ các thẻ <rect> SVG trong PixelSprites.tsx.
- * Định dạng: "x,y,w,h,#màu[,alpha];..." — màu bắt đầu bằng '*' là màu có thể thay (tint).
- * Caller tự canvas.scale(...) rồi gọi draw() với đơn vị 1 => không bị hở nét giữa các ô.
- */
+
 public final class PixelArt {
     private PixelArt() {}
 
@@ -51,12 +47,18 @@ public final class PixelArt {
 
     /** Vẽ icon 12x12 vào ô vuông (left, top, size px). */
     public static void drawIcon(Canvas c, Paint p, String name, float left, float top, float size) {
+        drawIcon(c, p, name, left, top, size, false, 0);
+    }
+
+    /** Như trên nhưng đổi màu các phần tử có thể tint (icon có dấu '*'). */
+    public static void drawIcon(Canvas c, Paint p, String name, float left, float top, float size,
+                                boolean hasTint, int tint) {
         List<R> r = ICONS.get(name);
         if (r == null) return;
         c.save();
         c.translate(left, top);
         c.scale(size / 12f, size / 12f);
-        draw(c, p, r);
+        draw(c, p, r, 0, 0, hasTint, tint);
         c.restore();
     }
 
@@ -99,7 +101,7 @@ public final class PixelArt {
         ICONS.put("shop", parse("1,2,10,3,#ef4444;3,2,2,3,#fef2f2;7,2,2,3,#fef2f2;2,5,8,6,#d97706;4,7,4,4,#451a03"));
         ICONS.put("crown", parse("1,3,2,6,#facc15;5,2,2,7,#facc15;9,3,2,6,#facc15;3,5,2,4,#eab308;7,5,2,4,#eab308;1,9,10,2,#ca8a04;5,6,2,2,#ef4444"));
         ICONS.put("lock", parse("4,2,4,1,#94a3b8;3,3,1,2,#94a3b8;8,3,1,2,#94a3b8;2,5,8,6,#64748b;5,7,2,2,#0f172a"));
-        ICONS.put("check", parse("9,2,2,2,#4ade80;7,4,2,2,#4ade80;5,6,2,2,#4ade80;3,8,2,2,#4ade80;1,6,2,2,#4ade80"));
+        ICONS.put("check", parse("9,2,2,2,*#4ade80;7,4,2,2,*#4ade80;5,6,2,2,*#4ade80;3,8,2,2,*#4ade80;1,6,2,2,*#4ade80"));
         ICONS.put("map", parse("1,2,3,8,#fde68a;4,3,4,8,#fcd34d;8,2,3,8,#fde68a;2,4,2,2,#ef4444;5,6,2,2,#3b82f6;8,4,2,2,#16a34a"));
         ICONS.put("ticket", parse("1,3,10,6,#fbbf24;1,3,10,1,#fde68a;5,3,1,6,#b45309;3,5,1,2,#b45309;8,5,1,2,#b45309;0,5,1,2,#78350f;11,5,1,2,#78350f"));
         ICONS.put("gear", parse("5,0,2,2,#94a3b8;5,10,2,2,#94a3b8;0,5,2,2,#94a3b8;10,5,2,2,#94a3b8;1,1,2,2,#94a3b8;9,1,2,2,#94a3b8;1,9,2,2,#94a3b8;9,9,2,2,#94a3b8;2,2,8,8,#cbd5e1;3,3,6,6,#94a3b8;4,4,4,4,#cbd5e1;5,5,2,2,#1e293b"));

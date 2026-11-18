@@ -165,7 +165,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Quay x10 chắc chắn có ≥ 1 trang bị Sử thi trở lên"
+                        android:text="Quay x10 chắc chắn nhận trang bị Sử thi trở lên"
                         android:textColor="#C084FC"
                         android:textSize="11sp" />
                 </LinearLayout>

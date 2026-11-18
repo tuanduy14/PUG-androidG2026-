@@ -296,12 +296,12 @@ public class GachaActivity extends AppCompatActivity {
         new PixelDialog(this)
                 .title("TỈ LỆ QUAY", PixelUi.AMBER_LIGHT)
                 .message("VÀNG: 33%\n"
-                        + "  · 2 Vàng: 16%\n  · 5 Vàng: 10%\n  · 10 Vàng: 6%\n  · 100 Vàng (nổ hũ): 1%\n\n"
-                        + "TRANG BỊ ĐỘC QUYỀN GACHA\n"
+                        + "  · 2 Vàng: 16%\n  · 5 Vàng: 10%\n  · 10 Vàng: 6%\n  · 100 Vàng: 1%\n\n"
+                        + "TRANG BỊ ĐỘC QUYỀN\n"
                         + "  · Thường: 40%\n  · Hiếm: 18.5%\n  · Sử thi: 7%\n  · Huyền thoại: 1.5%\n\n"
                         + "BẢO HIỂM\n"
-                        + "  · Quay x10: chắc chắn có ≥ 1 trang bị Sử thi trở lên.\n"
-                        + "  · Quay đủ 70 lần: chắc chắn có 1 trang bị Huyền thoại (ra Huyền thoại thì đếm lại từ 0).\n\n"
+                        + "  · Quay đủ 10: chắc chắn nhận trang bị Sử thi trở lên.\n"
+                        + "  · Quay đủ 70 lần: chắc chắn nhận trang bị Huyền thoại.\n\n"
                         + "TRÙNG TRANG BỊ → ĐỔI RA VÀNG\n"
                         + "  · Thường: 2 Vàng\n  · Hiếm: 5 Vàng\n  · Sử thi: 10 Vàng\n  · Huyền thoại: 50 Vàng")
                 .button("ĐÓNG", PixelUi.AMBER, PixelUi.DARK_TEXT, null)

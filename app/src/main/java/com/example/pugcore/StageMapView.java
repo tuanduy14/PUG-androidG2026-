@@ -165,10 +165,12 @@ public class StageMapView extends View {
 
         // huy hiệu hoàn thành / khoá
         if (isCleared || !unlocked) {
-            float bs = 16 * d, bx = cx + half - bs + 6 * d, by = cy + half - bs + 6 * d;
-            rect(c, bx - d, by - d, bx + bs + d, by + bs + d, PixelUi.OUTLINE);
-            rect(c, bx, by, bx + bs, by + bs, isCleared ? 0xFF34D399 : 0xFF1E293B);
-            PixelArt.drawIcon(c, paint, isCleared ? "check" : "lock", bx + 2 * d, by + 2 * d, bs - 4 * d);
+            float bs = 18 * d, bx = cx + half - bs + 6 * d, by = cy + half - bs + 6 * d;
+            // ✓: nền tối + viền vàng + dấu ✓ vàng để nổi bật trên ô màu xanh lá
+            rect(c, bx - 2 * d, by - 2 * d, bx + bs + 2 * d, by + bs + 2 * d, isCleared ? 0xFFFDE047 : PixelUi.OUTLINE);
+            rect(c, bx, by, bx + bs, by + bs, isCleared ? 0xFF0F172A : 0xFF1E293B);
+            if (isCleared) PixelArt.drawIcon(c, paint, "check", bx + 2 * d, by + 2 * d, bs - 4 * d, true, 0xFFFDE047);
+            else PixelArt.drawIcon(c, paint, "lock", bx + 2 * d, by + 2 * d, bs - 4 * d);
         }
 
         // nhãn BOSS phía trên

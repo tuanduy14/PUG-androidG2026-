@@ -81,15 +81,15 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tvMonster"
+                    android:id="@+id/tvPlayer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#FECDD3"
+                    android:textColor="#FDA4AF"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <com.example.pugcore.PixelBarView
-                    android:id="@+id/pbMonster"
+                    android:id="@+id/pbPlayer"
                     android:layout_width="match_parent"
                     android:layout_height="12dp"
                     android:layout_marginTop="4dp" />
@@ -103,15 +103,15 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tvPlayer"
+                    android:id="@+id/tvMonster"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#FDA4AF"
+                    android:textColor="#FECDD3"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <com.example.pugcore.PixelBarView
-                    android:id="@+id/pbPlayer"
+                    android:id="@+id/pbMonster"
                     android:layout_width="match_parent"
                     android:layout_height="12dp"
                     android:layout_marginTop="4dp" />

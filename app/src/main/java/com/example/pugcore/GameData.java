@@ -86,7 +86,7 @@ public final class GameData {
         public final Archetype archetype; public final String name, tagline;
         Stage(int stage, boolean boss, Archetype a, String name, int hp, int atk, int gold, int exp, String tagline) {
             this.stage = stage; this.isBoss = boss; this.archetype = a; this.name = name;
-            this.maxHp = Math.max(1, Math.round(hp * MONSTER_HP_SCALE));
+            this.maxHp = Math.max(1, hp);
             this.atk = atk; this.attack = atk; this.goldReward = gold; this.rewardGold = gold; this.expReward = exp; this.tagline = tagline;
         }
     }
@@ -97,18 +97,15 @@ public final class GameData {
         }
     }
 
-    // ====== CÂN BẰNG GAME (chỉnh ở đây) ======
-    /** Thời gian 1 lượt tấn công. Bản mẫu là 3s (click), hít đất thật chậm hơn nhiều nên để 20s. */
+
+
     public static final long RUSH_DURATION_MS = 20_000;
     public static final int TURN_SECONDS = 20;
     public static final int POTION_HEAL = 50;
     public static final int POTION_PRICE = 20;
     public static final int BASE_HP = 100;
-    /**
-     * Bản mẫu tính theo click (~10 click/giây), còn hít đất ~0,5 rep/giây => HP quái gốc quá cao.
-     * Toàn bộ HP quái được nhân với hệ số này. Muốn khó như bản mẫu thì đặt 1f.
-     */
-    public static final float MONSTER_HP_SCALE = 0.25f;
+
+
     public static final int BASE_HERO_HP = 100;
     public static final int TOTAL_STAGES = 10;
 
@@ -171,16 +168,16 @@ public final class GameData {
     };
 
     public static final Monster[] MONSTERS = {
-            new Monster(1, false, Archetype.SLIME, "Slime Xanh Nhớt", 40, 7, 25, 8, "Quái tập sự ở bìa rừng"),
-            new Monster(2, false, Archetype.SLIME, "Slime Gai Rừng", 75, 10, 36, 12, "Slime đột biến hung hãn hơn"),
-            new Monster(3, false, Archetype.GOBLIN, "Yêu Tinh Goblin", 120, 14, 50, 16, "Kẻ cướp ranh mãnh cầm dao găm"),
-            new Monster(4, false, Archetype.GOBLIN, "Goblin Đạo Tặc", 175, 19, 70, 22, "Tên trinh sát canh cổng doanh trại"),
-            new Monster(5, true, Archetype.ORC, "Thủ Lĩnh Orc Đỏ", 300, 26, 145, 48, "BOSS VÁN 5 · Bạo chúa rừng sâu"),
-            new Monster(6, false, Archetype.SKELETON, "Bộ Xương Kiếm Sĩ", 360, 31, 115, 38, "Chiến binh cổ đại trong hầm mộ"),
-            new Monster(7, false, Archetype.SKELETON, "Kỵ Sĩ Xương Đen", 460, 37, 150, 50, "Hộ vệ bất tử với thanh kiếm nguyền"),
-            new Monster(8, false, Archetype.ORC, "Orc Thiết Giáp", 600, 45, 195, 65, "Cận vệ tinh nhuệ của Ma Vương"),
-            new Monster(9, false, Archetype.SKELETON, "Tử Thần Hầm Ngục", 780, 54, 250, 82, "Cửa ngõ cuối trước hang Rồng"),
-            new Monster(10, true, Archetype.DRAGON, "Rồng Lửa Cổ Đại", 1150, 68, 500, 160, "BOSS CUỐI VÁN 10 · Chúa tể dung nham"),
+            new Monster(1, false, Archetype.SLIME, "Slime Xanh Nhớt", 320, 15, 25, 8, "Quái tập sự ở bìa rừng"),
+            new Monster(2, false, Archetype.SLIME, "Slime Gai Rừng", 450, 20, 36, 12, "Slime đột biến hung hãn hơn"),
+            new Monster(3, false, Archetype.GOBLIN, "Yêu Tinh Goblin", 720, 44, 50, 16, "Kẻ cướp ranh mãnh cầm dao găm"),
+            new Monster(4, false, Archetype.GOBLIN, "Goblin Đạo Tặc", 980, 68, 70, 22, "Tên trinh sát canh cổng doanh trại"),
+            new Monster(5, true, Archetype.ORC, "Thủ Lĩnh Orc Đỏ", 2000, 82, 145, 48, "BOSS VÁN 5 · Bạo chúa rừng sâu"),
+            new Monster(6, false, Archetype.SKELETON, "Bộ Xương Kiếm Sĩ", 1320, 72, 115, 38, "Chiến binh cổ đại trong hầm mộ"),
+            new Monster(7, false, Archetype.SKELETON, "Kỵ Sĩ Xương Đen", 2130, 57, 150, 50, "Hộ vệ bất tử với thanh kiếm nguyền"),
+            new Monster(8, false, Archetype.ORC, "Orc Thiết Giáp", 1780, 246, 195, 65, "Cận vệ tinh nhuệ của Ma Vương"),
+            new Monster(9, false, Archetype.SKELETON, "Tử Thần Hầm Ngục", 2750, 176, 250, 82, "Cửa ngõ cuối trước hang Rồng"),
+            new Monster(10, true, Archetype.DRAGON, "Rồng Lửa Cổ Đại", 5000, 135, 500, 160, "BOSS CUỐI VÁN 10 · Chúa tể dung nham"),
     };
 
     public static final Stage[] STAGES = MONSTERS;

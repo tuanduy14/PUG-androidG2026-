@@ -84,7 +84,8 @@ public class MapActivity extends AppCompatActivity {
         icon.setMonster(s.archetype);
         bossTag.setVisibility(s.isBoss ? View.VISIBLE : View.GONE);
         tvName.setText("Ván " + s.stage + ": " + s.name);
-        tvStats.setText("HP " + s.maxHp + " · ATK " + s.atk + " · +" + s.goldReward + " vàng");
+        tvStats.setText("HP " + s.maxHp + " · ATK " + s.atk + (player.isCleared(s.stage)
+                ? " · ĐÃ THẮNG (không thưởng)" : " · +" + s.goldReward + " vàng"));
         footer.setBackgroundColor(s.isBoss ? 0xFF2C1520 : 0xFF161C2C);
         btnFight.setBackground(PixelUi.button(this, s.isBoss ? 0xFFF43F5E : 0xFFF59E0B));
         btnFight.setTextColor(s.isBoss ? 0xFFFFFFFF : PixelUi.DARK_TEXT);

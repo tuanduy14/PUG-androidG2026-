@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.TextUtils;
+import android.util.Log;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.os.Looper;
@@ -72,6 +73,8 @@ public class BattleActivity extends AppCompatActivity {
     private PlayerData player;
     private GameData.Monster monster;
     private CountDownTimer timer;
+
+    private static final String TAG = "PUG_BATTLE";
 
     private State state = State.IDLE;
     private int monsterHp, playerHp, maxPlayerHp, reps;
@@ -230,8 +233,11 @@ public class BattleActivity extends AppCompatActivity {
         tvDebug.setText("");
 
         int dmg = player.calcDamage(reps);
+        int hpBefore = monsterHp;
         monsterHp = Math.max(0, monsterHp - dmg);
-        log("Bạn làm " + reps + " rep, gây " + dmg + " sát thương!");
+        Log.d(TAG, "endTurn reps=" + reps + " dmg=" + dmg + " monsterHp " + hpBefore + "->" + monsterHp
+                + "/" + monster.maxHp + " playerHp=" + playerHp + "/" + maxPlayerHp);
+        log("Bạn làm " + reps + " rep, gây " + dmg + " sát thương! Quái còn " + monsterHp + "/" + monster.maxHp + " máu.");
         SoundFx.play(SoundFx.HEAVY_STRIKE);
         heroSprite.setHeroPose(PixelArt.POSE_ATTACK);
         monsterSprite.setHurt(true);
@@ -287,26 +293,36 @@ public class BattleActivity extends AppCompatActivity {
     // ---------- Kết thúc trận ----------
 
     private void win() {
+        if (state == State.OVER) return;
+        if (monsterHp > 0) { // an toàn: chỉ thắng khi quái thật sự hết máu
+            Log.e(TAG, "win() bị gọi nhưng quái còn " + monsterHp + " máu — bỏ qua");
+            return;
+        }
+        Log.d(TAG, "WIN stage=" + monster.stage);
         state = State.OVER;
         SoundFx.play(SoundFx.VICTORY);
-        player.gold += monster.rewardGold;
+        // chỉ lần thắng đầu tiên của ván này mới có thưởng; đánh lại thì không
+        boolean firstClear = !player.isCleared(monster.stage);
+        if (firstClear) player.gold += monster.rewardGold;
         player.markCleared(monster.stage);
         player.save(this);
         updateUi();
-        showEndDialog("Chiến thắng!", "Bạn hạ gục " + monster.name
-                + " và nhận " + monster.rewardGold + " vàng.");
+        showEndDialog(true, firstClear
+                ? "Bạn hạ gục " + monster.name + " lần đầu và nhận " + monster.rewardGold + " vàng."
+                : "Bạn hạ gục " + monster.name + ". Ván này đã thắng trước đó nên không nhận thưởng.");
     }
 
     private void lose() {
+        if (state == State.OVER) return;
+        Log.d(TAG, "LOSE stage=" + monster.stage + " monsterHp=" + monsterHp + "/" + monster.maxHp);
         state = State.OVER;
         SoundFx.play(SoundFx.GAME_OVER);
         updateUi();
-        showEndDialog("Thất bại", "Bạn đã gục ngã trước " + monster.name + ".");
+        showEndDialog(false, "Bạn đã gục ngã trước " + monster.name + ". Quái còn " + monsterHp + "/" + monster.maxHp + " máu.");
     }
 
-    private void showEndDialog(String title, String message) {
+    private void showEndDialog(boolean won, String message) {
         if (isFinishing() || isDestroyed()) return;
-        boolean won = title.contains("thắng");
         new PixelDialog(this)
                 .title(won ? "CHIẾN THẮNG!" : "THẤT BẠI", won ? PixelUi.AMBER_LIGHT : 0xFFFB7185)
                 .message(message)
